@@ -1,0 +1,105 @@
+.pomodoro-timer {
+  background: var(--accent);
+  color: white;
+  padding: 2rem;
+  border-radius: var(--border-radius);
+  text-align: center;
+  box-shadow: var(--box-shadow);
+  transition: var(--transition);
+}
+
+.pomodoro-timer.pomodoro {
+  background: var(--danger);
+}
+
+.pomodoro-timer.shortBreak {
+  background: var(--success);
+}
+
+.pomodoro-timer.longBreak {
+  background: var(--primary);
+}
+
+.timer-modes {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.timer-modes button {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  color: white;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.timer-modes button.active {
+  background: white;
+  color: var(--text);
+  font-weight: 600;
+}
+
+.timer-modes button:hover {
+  transform: translateY(-2px);
+}
+
+.timer-display h2 {
+  font-size: 4rem;
+  margin: 1rem 0;
+  font-weight: 700;
+}
+
+.timer-controls {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+
+.timer-controls button {
+  background: white;
+  color: var(--text);
+  border: none;
+  padding: 0.8rem 1.5rem;
+  border-radius: 50px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: var(--transition);
+}
+
+.timer-controls button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.timer-stats {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  font-size: 0.9rem;
+  opacity: 0.9;
+}
+
+.timer-stats p {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+@media (max-width: 768px) {
+  .timer-display h2 {
+    font-size: 3rem;
+  }
+
+  .timer-modes {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}

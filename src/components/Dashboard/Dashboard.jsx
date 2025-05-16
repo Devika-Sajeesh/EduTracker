@@ -13,17 +13,32 @@ import {
   onSnapshot,
 } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
-import { getDoc } from "firebase/firestore";
+import { getDoc, serverTimestamp } from "firebase/firestore";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faHome,
+  faTasks,
+  faChartLine,
+  faChartBar,
+  faCheck,
+  faTrash,
+  faPlus,
+  faClock,
+} from "@fortawesome/free-solid-svg-icons";
+import PomodoroTimer from "../PomodoroTimer.jsx";
+import AIStudyAssistant from "../AIStudyAssistant/AIStudyAssistant.jsx";
 
-/*Dashboard Function*/
 export default function Dashboard() {
   const [userData, setUserData] = useState(null);
   const [tasks, setTasks] = useState([]);
   const [newTask, setNewTask] = useState("");
   const [dueDate, setDueDate] = useState("");
-  const [studyTime, setStudyTime] = useState(0);
+  const [studyTime, setStudyTime] = useState("");
   const [marks, setMarks] = useState([]);
-  const [newMark, setNewMark] = useState({ subject: "", score: 0 });
+  const [newMark, setNewMark] = useState({ subject: "", score: "" });
+  const [activeTab, setActiveTab] = useState("dashboard");
+  const currentSubject =
+    tasks[0]?.subject || marks[0]?.subject || "General Studies";
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -38,11 +53,7 @@ export default function Dashboard() {
       if (userSnap.exists()) {
         const data = userSnap.data();
         setUserData(data);
-
-        //store student data
-        if (data.role === "student") {
-          loadStudentData(user.uid);
-        }
+        loadStudentData(user.uid);
       }
     });
 
@@ -50,7 +61,6 @@ export default function Dashboard() {
   }, []);
 
   const loadStudentData = (userId) => {
-    //-------------------add tasks---------------
     const tasksQuery = query(
       collection(db, "tasks"),
       where("userId", "==", userId),
@@ -61,12 +71,11 @@ export default function Dashboard() {
       const taskList = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
-        dueDate: doc.data().dueDate?.toDate()?.toLocaleDateString(),
+        dueDate: doc.data().dueDate?.toDate(),
       }));
       setTasks(taskList);
     });
 
-    //-----------------add marks------------------------
     const marksQuery = query(
       collection(db, "marks"),
       where("userId", "==", userId)
@@ -76,6 +85,7 @@ export default function Dashboard() {
       const markList = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
+        date: doc.data().date?.toDate(),
       }));
       setMarks(markList);
     });
@@ -86,7 +96,6 @@ export default function Dashboard() {
     };
   };
 
-  //----------------tasks-----------------------
   const addTask = async (e) => {
     e.preventDefault();
     if (!newTask.trim() || !dueDate) return;
@@ -106,19 +115,17 @@ export default function Dashboard() {
     }
   };
 
-  //-------------------complete tasks--------------------------
   const completeTask = async (taskId) => {
     try {
       await updateDoc(doc(db, "tasks", taskId), {
         completed: true,
-        completedAt: new Date(),
+        completedAt: serverTimestamp(),
       });
     } catch (error) {
       console.error("Error completing task:", error);
     }
   };
 
-  //------------------delete task-----------------------------
   const deleteTask = async (taskId) => {
     try {
       await deleteDoc(doc(db, "tasks", taskId));
@@ -127,26 +134,30 @@ export default function Dashboard() {
     }
   };
 
-  //------------------add marks---------------------------
   const addMark = async (e) => {
     e.preventDefault();
-    if (!newMark.subject.trim() || newMark.score < 0) return;
+    if (
+      !newMark.subject.trim() ||
+      isNaN(newMark.score) ||
+      newMark.score < 0 ||
+      newMark.score > 100
+    )
+      return;
 
     try {
       await addDoc(collection(db, "marks"), {
         userId: auth.currentUser.uid,
         subject: newMark.subject,
         score: Number(newMark.score),
-        date: new Date(),
-        createdAt: new Date(),
+        date: serverTimestamp(),
+        createdAt: serverTimestamp(),
       });
-      setNewMark({ subject: "", score: 0 });
+      setNewMark({ subject: "", score: "" });
     } catch (error) {
       console.error("Error adding mark:", error);
     }
   };
 
-  //---------------------delete marks-----------------------
   const deleteMark = async (markId) => {
     try {
       await deleteDoc(doc(db, "marks", markId));
@@ -155,208 +166,262 @@ export default function Dashboard() {
     }
   };
 
-  const logStudyTime = async () => {
-    if (studyTime <= 0) return;
+  const logStudyTime = async (e) => {
+    e.preventDefault();
+    if (!studyTime || isNaN(studyTime) || studyTime <= 0) return;
 
     try {
       await addDoc(collection(db, "studySessions"), {
         userId: auth.currentUser.uid,
         minutes: Number(studyTime),
-        date: new Date(),
-        createdAt: new Date(),
+        date: serverTimestamp(),
+        createdAt: serverTimestamp(),
       });
-      setStudyTime(0);
+      setStudyTime("");
     } catch (error) {
       console.error("Error logging study time:", error);
     }
   };
 
-  //---------------------ui--------------------------
+  const formatDate = (date) => {
+    if (!date) return "N/A";
+    return new Date(date).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  };
+
   return (
     <div className="dashboard-container">
-      {/*------------------------------- Sidebar----------------------------- */}
-      {/* -------------------desires to add separate sections for each later---------*/}
       <aside className="sidebar">
         <div className="logo">
-          <h1>EduTracker</h1>
+          <h1>EduTrack</h1>
         </div>
         <nav className="nav-menu">
           <ul>
-            <li className="active">
-              <a href="#">
-                <i className="fas fa-home"></i> Dashboard
+            <li className={activeTab === "dashboard" ? "active" : ""}>
+              <a href="#" onClick={() => setActiveTab("dashboard")}>
+                <FontAwesomeIcon icon={faHome} /> Dashboard
               </a>
             </li>
-            <li>
-              <a href="#tasks">
-                <i className="fas fa-tasks"></i> My Tasks
+            <li className={activeTab === "tasks" ? "active" : ""}>
+              <a href="#tasks" onClick={() => setActiveTab("tasks")}>
+                <FontAwesomeIcon icon={faTasks} /> My Tasks
               </a>
             </li>
-            <li>
-              <a href="#marks">
-                <i className="fas fa-chart-line"></i> My Marks
+            <li className={activeTab === "marks" ? "active" : ""}>
+              <a href="#marks" onClick={() => setActiveTab("marks")}>
+                <FontAwesomeIcon icon={faChartLine} /> My Marks
               </a>
             </li>
-            <li>
-              <a href="#progress">
-                <i className="fas fa-chart-bar"></i> My Progress
+            <li className={activeTab === "progress" ? "active" : ""}>
+              <a href="#progress" onClick={() => setActiveTab("progress")}>
+                <FontAwesomeIcon icon={faChartBar} /> My Progress
               </a>
             </li>
           </ul>
         </nav>
       </aside>
 
-      {/* ---------------------Main content---------------------*/}
       <main className="main-content">
-        {/* --------------Top Bar----------------------- */}
         <header className="top-bar">
-          <div className="user-info">
-            <div className="user-profile">
-              <img
-                src={userData?.photoURL || "https://placehold.co/40"}
-                alt="User"
-              />
-              <span>{userData?.fullName || "Student"}</span>
-            </div>
+          <div className="user-profile">
+            <img
+              src={userData?.photoURL || "https://i.pravatar.cc/40"}
+              alt="User"
+              onError={(e) => {
+                e.target.src = "https://i.pravatar.cc/40";
+              }}
+            />
+            <span>{userData?.fullName || "Student"}</span>
           </div>
         </header>
 
-        {/* Content Area */}
         <div className="content-area">
-          <section className="welcome-section">
-            <h2>Welcome, {userData?.fullName || "Student"}!</h2>
-            <p>Track your study tasks, deadlines, and progress.</p>
+          <section className="section welcome-section">
+            <div className="section-header">
+              <h2 className="section-title">
+                Welcome, {userData?.fullName || "Student"}!
+              </h2>
+            </div>
+            <p>Track your study tasks, deadlines, and academic progress.</p>
           </section>
 
-          {/* Add New Task */}
-          <section className="task-form">
-            <h3>Add New Task</h3>
-            <form onSubmit={addTask}>
-              <input
-                type="text"
-                placeholder="Task description"
-                value={newTask}
-                onChange={(e) => setNewTask(e.target.value)}
-                required
-              />
-              <input
-                type="date"
-                value={dueDate}
-                onChange={(e) => setDueDate(e.target.value)}
-                required
-              />
-              <button type="submit">Add Task</button>
+          <section className="section">
+            <div className="section-header">
+              <h3 className="section-title">Add New Task</h3>
+            </div>
+            <form onSubmit={addTask} className="form-grid">
+              <div className="form-group">
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="Task description"
+                  value={newTask}
+                  onChange={(e) => setNewTask(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <input
+                  type="date"
+                  className="form-control"
+                  value={dueDate}
+                  onChange={(e) => setDueDate(e.target.value)}
+                  required
+                />
+              </div>
+              <button type="submit" className="btn btn-primary">
+                <FontAwesomeIcon icon={faPlus} /> Add Task
+              </button>
             </form>
           </section>
 
-          {/* Current Tasks */}
-          <section className="tasks-section">
-            <h3>My Current Tasks ({tasks.length})</h3>
+          <section className="section">
+            <div className="section-header">
+              <h3 className="section-title">
+                My Current Tasks ({tasks.length})
+              </h3>
+            </div>
             {tasks.length > 0 ? (
               <ul className="task-list">
-                {tasks.map((task) => (
-                  <li key={task.id} className="task-item">
-                    <div className="task-info">
-                      <span className="task-title">{task.title}</span>
-                      <span className="task-due">Due: {task.dueDate}</span>
-                    </div>
-                    <div className="task-actions">
-                      <button
-                        onClick={() => completeTask(task.id)}
-                        className="complete-btn"
-                      >
-                        Complete
-                      </button>
-                      <button
-                        onClick={() => deleteTask(task.id)}
-                        className="delete-btn"
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </li>
-                ))}
+                {tasks
+                  .sort((a, b) => a.dueDate - b.dueDate)
+                  .map((task) => (
+                    <li key={task.id} className="task-item">
+                      <div className="task-info">
+                        <span className="task-title">{task.title}</span>
+                        <span className="task-due">
+                          Due: {formatDate(task.dueDate)}
+                        </span>
+                      </div>
+                      <div className="task-actions">
+                        <button
+                          onClick={() => completeTask(task.id)}
+                          className="btn btn-complete"
+                        >
+                          <FontAwesomeIcon icon={faCheck} /> Complete
+                        </button>
+                        <button
+                          onClick={() => deleteTask(task.id)}
+                          className="btn btn-delete"
+                        >
+                          <FontAwesomeIcon icon={faTrash} /> Delete
+                        </button>
+                      </div>
+                    </li>
+                  ))}
               </ul>
             ) : (
-              <p className="no-tasks">No current tasks. Add one above!</p>
+              <div className="empty-state">
+                <p>No current tasks. Add one above!</p>
+              </div>
             )}
           </section>
+          <AIStudyAssistant subject={currentSubject} />
 
-          {/* Study Time Tracking */}
-          <section className="study-time">
-            <h3>Log Study Time (minutes)</h3>
-            <div className="study-form">
-              <input
-                type="number"
-                min="1"
-                value={studyTime}
-                onChange={(e) => setStudyTime(e.target.value)}
-                placeholder="Minutes studied"
-              />
-              <button onClick={logStudyTime}>Log Time</button>
+          <section className="section">
+            <div className="section-header">
+              <h3 className="section-title">Log Study Time</h3>
             </div>
+            <form onSubmit={logStudyTime} className="form-grid">
+              <div className="form-group">
+                <input
+                  type="number"
+                  className="form-control"
+                  min="1"
+                  value={studyTime}
+                  onChange={(e) => setStudyTime(e.target.value)}
+                  placeholder="Minutes studied"
+                  required
+                />
+              </div>
+              <button type="submit" className="btn btn-primary">
+                <FontAwesomeIcon icon={faClock} /> Log Time
+              </button>
+            </form>
           </section>
 
-          {/* Marks Tracking */}
-          <section className="marks-section">
-            <h3>My Marks</h3>
-            <form onSubmit={addMark} className="mark-form">
-              <input
-                type="text"
-                placeholder="Subject"
-                value={newMark.subject}
-                onChange={(e) =>
-                  setNewMark({ ...newMark, subject: e.target.value })
-                }
-                required
-              />
-              <input
-                type="number"
-                min="0"
-                max="100"
-                placeholder="Score"
-                value={newMark.score}
-                onChange={(e) =>
-                  setNewMark({ ...newMark, score: e.target.value })
-                }
-                required
-              />
-              <button type="submit">Add Mark</button>
+          <section className="section">
+            <div className="section-header">
+              <h3 className="section-title">My Marks</h3>
+            </div>
+            <form onSubmit={addMark} className="form-grid">
+              <div className="form-group">
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="Subject"
+                  value={newMark.subject}
+                  onChange={(e) =>
+                    setNewMark({ ...newMark, subject: e.target.value })
+                  }
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <input
+                  type="number"
+                  className="form-control"
+                  min="0"
+                  max="100"
+                  placeholder="Score (0-100)"
+                  value={newMark.score}
+                  onChange={(e) =>
+                    setNewMark({ ...newMark, score: e.target.value })
+                  }
+                  required
+                />
+              </div>
+              <button type="submit" className="btn btn-primary">
+                <FontAwesomeIcon icon={faPlus} /> Add Mark
+              </button>
             </form>
 
             {marks.length > 0 ? (
-              <table className="marks-table">
-                <thead>
-                  <tr>
-                    <th>Subject</th>
-                    <th>Score</th>
-                    <th>Date</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {marks.map((mark) => (
-                    <tr key={mark.id}>
-                      <td>{mark.subject}</td>
-                      <td>{mark.score}%</td>
-                      <td>
-                        {mark.date?.toDate()?.toLocaleDateString() || "N/A"}
-                      </td>
-                      <td>
-                        <button
-                          onClick={() => deleteMark(mark.id)}
-                          className="delete-btn"
-                        >
-                          Delete
-                        </button>
-                      </td>
+              <div className="table-responsive">
+                <table className="marks-table">
+                  <thead>
+                    <tr>
+                      <th>Subject</th>
+                      <th>Score</th>
+                      <th>Date</th>
+                      <th>Actions</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {marks
+                      .sort((a, b) => b.date - a.date)
+                      .map((mark) => (
+                        <tr key={mark.id}>
+                          <td>{mark.subject}</td>
+                          <td>{mark.score}%</td>
+                          <td>{formatDate(mark.date)}</td>
+                          <td>
+                            <button
+                              onClick={() => deleteMark(mark.id)}
+                              className="btn btn-delete"
+                            >
+                              <FontAwesomeIcon icon={faTrash} /> Delete
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                  </tbody>
+                </table>
+              </div>
             ) : (
-              <p className="no-marks">No marks recorded yet.</p>
+              <div className="empty-state">
+                <p>No marks recorded yet.</p>
+              </div>
             )}
+          </section>
+          <section className="section">
+            <div className="section-header">
+              <h3 className="section-title">Pomodoro Timer</h3>
+            </div>
+            <PomodoroTimer />
           </section>
         </div>
       </main>

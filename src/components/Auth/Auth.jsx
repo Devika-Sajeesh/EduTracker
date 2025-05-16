@@ -7,7 +7,6 @@ import {
   signInWithEmailAndPassword,
 } from "firebase/auth";
 import { doc, setDoc, serverTimestamp } from "firebase/firestore";
-
 export default function Auth() {
   const [rightPanel, setRightPanel] = useState(false);
   const [error, setError] = useState(null);
@@ -76,6 +75,14 @@ export default function Auth() {
 
   return (
     <div className={`container ${rightPanel ? "right-panel-active" : ""}`}>
+      {/* Welcome Message 
+      <div className="welcome-message">
+        <h1>Welcome to EduTrack!</h1>
+        <p>
+          Track your learning progress, organize your studies, and achieve your
+          academic goals.
+        </p>
+      </div>*/}
       {/* Error Message */}
       {error && (
         <div className="error-message">

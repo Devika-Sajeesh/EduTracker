@@ -1,16 +1,31 @@
-// src/App.jsx
 import React from "react";
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Route,
+  Routes,
+  Navigate,
+} from "react-router-dom";
+import { useAuth } from "./contexts/AuthContext";
 import Auth from "./components/Auth/Auth";
 import Dashboard from "./components/Dashboard/Dashboard";
 
-export default function App() {
+function App() {
+  const { currentUser } = useAuth();
+
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Auth />} />
-        <Route path="/dashboard" element={<Dashboard />} />
+        <Route
+          path="/"
+          element={!currentUser ? <Auth /> : <Navigate to="/dashboard" />}
+        />
+        <Route
+          path="/dashboard"
+          element={currentUser ? <Dashboard /> : <Navigate to="/" />}
+        />
       </Routes>
     </Router>
   );
 }
+
+export default App;
