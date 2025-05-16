@@ -1,9 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import { auth, db } from "../../firebase";
 import "./Dashboard.css";
 import {
   collection,
-  getDocs,
   addDoc,
   deleteDoc,
   doc,
@@ -11,9 +10,10 @@ import {
   query,
   where,
   onSnapshot,
+  getDoc,
+  serverTimestamp,
 } from "firebase/firestore";
-import { onAuthStateChanged } from "firebase/auth";
-import { getDoc, serverTimestamp } from "firebase/firestore";
+import { onAuthStateChanged, signOut } from "firebase/auth";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faHome,
@@ -24,9 +24,11 @@ import {
   faTrash,
   faPlus,
   faClock,
+  faRobot,
 } from "@fortawesome/free-solid-svg-icons";
-import PomodoroTimer from "../PomodoroTimer.jsx";
-import AIStudyAssistant from "../AIStudyAssistant/AIStudyAssistant.jsx";
+import PomodoroTimer from "../PomodoroTimer";
+import AIStudyAssistant from "../AIStudyAssistant/AIStudyAssistant";
+import { useNavigate } from "react-router-dom";
 
 export default function Dashboard() {
   const [userData, setUserData] = useState(null);
@@ -37,64 +39,128 @@ export default function Dashboard() {
   const [marks, setMarks] = useState([]);
   const [newMark, setNewMark] = useState({ subject: "", score: "" });
   const [activeTab, setActiveTab] = useState("dashboard");
-  const currentSubject =
-    tasks[0]?.subject || marks[0]?.subject || "General Studies";
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Refs for smooth scroll
+  const dashboardRef = useRef(null);
+  const tasksRef = useRef(null);
+  const marksRef = useRef(null);
+  const progressRef = useRef(null);
+  const aiRef = useRef(null);
+
+  const navigate = useNavigate();
+
+  const formatDate = useCallback((date) => {
+    if (!date) return "N/A";
+    const dateObj = date instanceof Date ? date : date.toDate();
+    return dateObj.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      navigate("/");
+    } catch (error) {
+      console.error("Error signing out:", error);
+      setError("Failed to logout. Please try again.");
+    }
+  };
+
+  const scrollToSection = useCallback((ref) => {
+    ref?.current?.scrollIntoView({ behavior: "smooth" });
+  }, []);
+
+  const loadStudentData = useCallback((userId) => {
+    setLoading(true);
+    try {
+      const tasksQuery = query(
+        collection(db, "tasks"),
+        where("userId", "==", userId),
+        where("completed", "==", false)
+      );
+
+      const unsubscribeTasks = onSnapshot(
+        tasksQuery,
+        (snapshot) => {
+          const taskList = snapshot.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+            dueDate: doc.data().dueDate,
+          }));
+          setTasks(taskList);
+          setLoading(false);
+        },
+        (error) => {
+          console.error("Error loading tasks:", error);
+          setError("Failed to load tasks.");
+          setLoading(false);
+        }
+      );
+
+      const marksQuery = query(
+        collection(db, "marks"),
+        where("userId", "==", userId)
+      );
+
+      const unsubscribeMarks = onSnapshot(
+        marksQuery,
+        (snapshot) => {
+          const markList = snapshot.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+            date: doc.data().date,
+          }));
+          setMarks(markList);
+        },
+        (error) => {
+          console.error("Error loading marks:", error);
+          setError("Failed to load marks.");
+        }
+      );
+
+      return () => {
+        unsubscribeTasks();
+        unsubscribeMarks();
+      };
+    } catch (error) {
+      console.error("Error setting up listeners:", error);
+      setError("Failed to load data.");
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (!user) {
-        window.location.href = "/login";
+        navigate("/");
         return;
       }
 
-      const userRef = doc(db, "users", user.uid);
-      const userSnap = await getDoc(userRef);
+      try {
+        const userRef = doc(db, "users", user.uid);
+        const userSnap = await getDoc(userRef);
 
-      if (userSnap.exists()) {
-        const data = userSnap.data();
-        setUserData(data);
-        loadStudentData(user.uid);
+        if (userSnap.exists()) {
+          setUserData(userSnap.data());
+          loadStudentData(user.uid);
+        } else {
+          setError("User data not found");
+          setLoading(false);
+        }
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+        setError("Failed to load user data.");
+        setLoading(false);
       }
     });
 
     return () => unsubscribe();
-  }, []);
-
-  const loadStudentData = (userId) => {
-    const tasksQuery = query(
-      collection(db, "tasks"),
-      where("userId", "==", userId),
-      where("completed", "==", false)
-    );
-
-    const unsubscribeTasks = onSnapshot(tasksQuery, (snapshot) => {
-      const taskList = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-        dueDate: doc.data().dueDate?.toDate(),
-      }));
-      setTasks(taskList);
-    });
-
-    const marksQuery = query(
-      collection(db, "marks"),
-      where("userId", "==", userId)
-    );
-
-    const unsubscribeMarks = onSnapshot(marksQuery, (snapshot) => {
-      const markList = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-        date: doc.data().date?.toDate(),
-      }));
-      setMarks(markList);
-    });
-
-    return () => {
-      unsubscribeTasks();
-      unsubscribeMarks();
-    };
-  };
+  }, [navigate, loadStudentData]);
 
   const addTask = async (e) => {
     e.preventDefault();
@@ -112,6 +178,7 @@ export default function Dashboard() {
       setDueDate("");
     } catch (error) {
       console.error("Error adding task:", error);
+      setError("Failed to add task.");
     }
   };
 
@@ -123,6 +190,7 @@ export default function Dashboard() {
       });
     } catch (error) {
       console.error("Error completing task:", error);
+      setError("Failed to complete task.");
     }
   };
 
@@ -131,6 +199,7 @@ export default function Dashboard() {
       await deleteDoc(doc(db, "tasks", taskId));
     } catch (error) {
       console.error("Error deleting task:", error);
+      setError("Failed to delete task.");
     }
   };
 
@@ -141,8 +210,10 @@ export default function Dashboard() {
       isNaN(newMark.score) ||
       newMark.score < 0 ||
       newMark.score > 100
-    )
+    ) {
+      setError("Please enter a valid subject and score (0-100)");
       return;
+    }
 
     try {
       await addDoc(collection(db, "marks"), {
@@ -155,6 +226,7 @@ export default function Dashboard() {
       setNewMark({ subject: "", score: "" });
     } catch (error) {
       console.error("Error adding mark:", error);
+      setError("Failed to add mark.");
     }
   };
 
@@ -163,12 +235,16 @@ export default function Dashboard() {
       await deleteDoc(doc(db, "marks", markId));
     } catch (error) {
       console.error("Error deleting mark:", error);
+      setError("Failed to delete mark.");
     }
   };
 
   const logStudyTime = async (e) => {
     e.preventDefault();
-    if (!studyTime || isNaN(studyTime) || studyTime <= 0) return;
+    if (!studyTime || isNaN(studyTime) || studyTime <= 0) {
+      setError("Please enter a valid study time (minutes)");
+      return;
+    }
 
     try {
       await addDoc(collection(db, "studySessions"), {
@@ -180,17 +256,22 @@ export default function Dashboard() {
       setStudyTime("");
     } catch (error) {
       console.error("Error logging study time:", error);
+      setError("Failed to log study time.");
     }
   };
 
-  const formatDate = (date) => {
-    if (!date) return "N/A";
-    return new Date(date).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
-  };
+  if (loading) {
+    return <div className="loading">Loading dashboard...</div>;
+  }
+
+  if (error) {
+    return (
+      <div className="error">
+        {error}
+        <button onClick={() => window.location.reload()}>Try Again</button>
+      </div>
+    );
+  }
 
   return (
     <div className="dashboard-container">
@@ -201,24 +282,60 @@ export default function Dashboard() {
         <nav className="nav-menu">
           <ul>
             <li className={activeTab === "dashboard" ? "active" : ""}>
-              <a href="#" onClick={() => setActiveTab("dashboard")}>
+              <button
+                onClick={() => {
+                  setActiveTab("dashboard");
+                  scrollToSection(dashboardRef);
+                }}
+                className="nav-link"
+              >
                 <FontAwesomeIcon icon={faHome} /> Dashboard
-              </a>
+              </button>
             </li>
             <li className={activeTab === "tasks" ? "active" : ""}>
-              <a href="#tasks" onClick={() => setActiveTab("tasks")}>
+              <button
+                onClick={() => {
+                  setActiveTab("tasks");
+                  scrollToSection(tasksRef);
+                }}
+                className="nav-link"
+              >
                 <FontAwesomeIcon icon={faTasks} /> My Tasks
-              </a>
+              </button>
             </li>
             <li className={activeTab === "marks" ? "active" : ""}>
-              <a href="#marks" onClick={() => setActiveTab("marks")}>
+              <button
+                onClick={() => {
+                  setActiveTab("marks");
+                  scrollToSection(marksRef);
+                }}
+                className="nav-link"
+              >
                 <FontAwesomeIcon icon={faChartLine} /> My Marks
-              </a>
+              </button>
             </li>
+            <li className={activeTab === "ai" ? "active" : ""}>
+              <button
+                onClick={() => {
+                  setActiveTab("ai");
+                  scrollToSection(aiRef);
+                }}
+                className="nav-link"
+              >
+                <FontAwesomeIcon icon={faRobot} /> AI Help
+              </button>
+            </li>
+
             <li className={activeTab === "progress" ? "active" : ""}>
-              <a href="#progress" onClick={() => setActiveTab("progress")}>
-                <FontAwesomeIcon icon={faChartBar} /> My Progress
-              </a>
+              <button
+                onClick={() => {
+                  setActiveTab("progress");
+                  scrollToSection(progressRef);
+                }}
+                className="nav-link"
+              >
+                <FontAwesomeIcon icon={faClock} /> Pomodoro Timer
+              </button>
             </li>
           </ul>
         </nav>
@@ -233,13 +350,19 @@ export default function Dashboard() {
               onError={(e) => {
                 e.target.src = "https://i.pravatar.cc/40";
               }}
+              className="user-avatar"
             />
-            <span>{userData?.fullName || "Student"}</span>
+            <span className="user-name">{userData?.fullName || "Student"}</span>
+            <button onClick={handleLogout} className="btn btn-logout">
+              Logout
+            </button>
           </div>
         </header>
 
         <div className="content-area">
-          <section className="section welcome-section">
+          {error && <div className="alert alert-error">{error}</div>}
+
+          <section className="section welcome-section" ref={dashboardRef}>
             <div className="section-header">
               <h2 className="section-title">
                 Welcome, {userData?.fullName || "Student"}!
@@ -248,7 +371,7 @@ export default function Dashboard() {
             <p>Track your study tasks, deadlines, and academic progress.</p>
           </section>
 
-          <section className="section">
+          <section className="section" ref={tasksRef}>
             <div className="section-header">
               <h3 className="section-title">Add New Task</h3>
             </div>
@@ -269,6 +392,7 @@ export default function Dashboard() {
                   className="form-control"
                   value={dueDate}
                   onChange={(e) => setDueDate(e.target.value)}
+                  min={new Date().toISOString().split("T")[0]}
                   required
                 />
               </div>
@@ -287,7 +411,7 @@ export default function Dashboard() {
             {tasks.length > 0 ? (
               <ul className="task-list">
                 {tasks
-                  .sort((a, b) => a.dueDate - b.dueDate)
+                  .sort((a, b) => (a.dueDate || 0) - (b.dueDate || 0))
                   .map((task) => (
                     <li key={task.id} className="task-item">
                       <div className="task-info">
@@ -300,12 +424,14 @@ export default function Dashboard() {
                         <button
                           onClick={() => completeTask(task.id)}
                           className="btn btn-complete"
+                          aria-label="Complete task"
                         >
                           <FontAwesomeIcon icon={faCheck} /> Complete
                         </button>
                         <button
                           onClick={() => deleteTask(task.id)}
                           className="btn btn-delete"
+                          aria-label="Delete task"
                         >
                           <FontAwesomeIcon icon={faTrash} /> Delete
                         </button>
@@ -319,7 +445,6 @@ export default function Dashboard() {
               </div>
             )}
           </section>
-          <AIStudyAssistant subject={currentSubject} />
 
           <section className="section">
             <div className="section-header">
@@ -343,7 +468,14 @@ export default function Dashboard() {
             </form>
           </section>
 
-          <section className="section">
+          <section className="section" ref={aiRef}>
+            <div className="section-header">
+              <h3 className="section-title">AI Doubt Clarifier</h3>
+            </div>
+            <AIStudyAssistant />
+          </section>
+
+          <section className="section" ref={marksRef}>
             <div className="section-header">
               <h3 className="section-title">My Marks</h3>
             </div>
@@ -392,7 +524,7 @@ export default function Dashboard() {
                   </thead>
                   <tbody>
                     {marks
-                      .sort((a, b) => b.date - a.date)
+                      .sort((a, b) => (b.date || 0) - (a.date || 0))
                       .map((mark) => (
                         <tr key={mark.id}>
                           <td>{mark.subject}</td>
@@ -402,6 +534,7 @@ export default function Dashboard() {
                             <button
                               onClick={() => deleteMark(mark.id)}
                               className="btn btn-delete"
+                              aria-label="Delete mark"
                             >
                               <FontAwesomeIcon icon={faTrash} /> Delete
                             </button>
@@ -417,7 +550,8 @@ export default function Dashboard() {
               </div>
             )}
           </section>
-          <section className="section">
+
+          <section className="section" ref={progressRef}>
             <div className="section-header">
               <h3 className="section-title">Pomodoro Timer</h3>
             </div>

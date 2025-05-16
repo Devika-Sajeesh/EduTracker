@@ -1,3 +1,4 @@
+/* Pomodoro Timer Styles */
 .pomodoro-timer {
   background: var(--accent);
   color: white;
@@ -6,65 +7,89 @@
   text-align: center;
   box-shadow: var(--box-shadow);
   transition: var(--transition);
+  margin-bottom: 2rem;
+  overflow: hidden;
+  position: relative;
 }
 
+/* Timer State Variations */
 .pomodoro-timer.pomodoro {
   background: var(--danger);
+  background: linear-gradient(135deg, var(--danger), #c0392b);
 }
 
 .pomodoro-timer.shortBreak {
   background: var(--success);
+  background: linear-gradient(135deg, var(--success), #27ae60);
 }
 
 .pomodoro-timer.longBreak {
   background: var(--primary);
+  background: linear-gradient(135deg, var(--primary), #2c3e50);
 }
 
+/* Timer Modes Selector */
 .timer-modes {
   display: flex;
   justify-content: center;
   gap: 1rem;
   margin-bottom: 1.5rem;
+  flex-wrap: wrap;
 }
 
 .timer-modes button {
   background: rgba(255, 255, 255, 0.2);
   border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 20px;
+  padding: 0.5rem 1.5rem;
+  border-radius: 50px;
   color: white;
   cursor: pointer;
   transition: var(--transition);
+  font-weight: 500;
+  font-size: 0.9rem;
+  min-width: 100px;
 }
 
 .timer-modes button.active {
   background: white;
   color: var(--text);
   font-weight: 600;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-.timer-modes button:hover {
+.timer-modes button:not(.active):hover {
+  background: rgba(255, 255, 255, 0.3);
   transform: translateY(-2px);
 }
 
-.timer-display h2 {
-  font-size: 4rem;
-  margin: 1rem 0;
-  font-weight: 700;
+/* Timer Display */
+.timer-display {
+  margin: 1.5rem 0;
+  position: relative;
 }
 
+.timer-display h2 {
+  font-size: 5rem;
+  margin: 0;
+  font-weight: 700;
+  letter-spacing: -2px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  font-family: "Roboto Mono", monospace;
+}
+
+/* Timer Controls */
 .timer-controls {
   display: flex;
   justify-content: center;
-  gap: 1rem;
-  margin: 1.5rem 0;
+  gap: 1.5rem;
+  margin: 2rem 0 1rem;
 }
 
 .timer-controls button {
   background: white;
   color: var(--text);
   border: none;
-  padding: 0.8rem 1.5rem;
+  padding: 0.8rem 2rem;
   border-radius: 50px;
   font-weight: 600;
   cursor: pointer;
@@ -72,34 +97,89 @@
   align-items: center;
   gap: 0.5rem;
   transition: var(--transition);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  text-transform: uppercase;
+  font-size: 0.9rem;
+  letter-spacing: 0.5px;
 }
 
 .timer-controls button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transform: translateY(-3px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
+.timer-controls button:active {
+  transform: translateY(1px);
+}
+
+/* Timer Stats */
 .timer-stats {
   display: flex;
   justify-content: center;
   gap: 2rem;
   font-size: 0.9rem;
   opacity: 0.9;
+  margin-top: 1.5rem;
+  flex-wrap: wrap;
 }
 
 .timer-stats p {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 0.5rem 1rem;
+  border-radius: 50px;
 }
 
+/* Responsive Design */
 @media (max-width: 768px) {
+  .pomodoro-timer {
+    padding: 1.5rem;
+  }
+
   .timer-display h2 {
-    font-size: 3rem;
+    font-size: 3.5rem;
   }
 
   .timer-modes {
-    flex-direction: column;
-    gap: 0.5rem;
+    gap: 0.75rem;
   }
+
+  .timer-modes button {
+    padding: 0.5rem 1rem;
+    min-width: auto;
+    flex-grow: 1;
+  }
+
+  .timer-controls {
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .timer-controls button {
+    padding: 0.7rem 1.2rem;
+    font-size: 0.8rem;
+  }
+
+  .timer-stats {
+    gap: 1rem;
+  }
+}
+
+/* Animation for Timer */
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.02);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.pomodoro-timer.running {
+  animation: pulse 2s infinite;
 }

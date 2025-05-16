@@ -24,26 +24,30 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: "Montserrat", -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 body {
-  background-color: var(--light);
+  font-family: "Montserrat", -apple-system, BlinkMacSystemFont, sans-serif;
+  background-color: var(--light); /* Set body background to light */
   color: var(--text);
   line-height: 1.6;
+  min-height: 100vh;
+  overflow-x: hidden;
 }
 
 .dashboard-container {
   display: grid;
-  grid-template-columns: var(--sidebar-width) 1fr;
+  grid-template-columns: var(--sidebar-width) 1fr; /* Sidebar width and remaining space */
   min-height: 100vh;
 }
 
 /* Sidebar */
 .sidebar {
-  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  background-color: var(
+    --primary
+  ); /* Solid primary color for sidebar background */
   color: white;
-  position: fixed;
+  position: fixed; /* Keep sidebar fixed during scrolling */
   width: var(--sidebar-width);
   height: 100vh;
   padding: 2rem 0;
@@ -63,6 +67,7 @@ body {
   font-weight: 700;
   letter-spacing: 0.5px;
   color: white;
+  margin: 0;
 }
 
 .nav-menu {
@@ -71,9 +76,14 @@ body {
 
 .nav-menu ul {
   list-style: none;
+  padding: 0;
 }
 
-.nav-menu li a {
+.nav-menu li {
+  margin: 0;
+}
+
+.nav-menu li button.nav-link {
   display: flex;
   align-items: center;
   padding: 0.9rem 2rem;
@@ -81,30 +91,38 @@ body {
   text-decoration: none;
   transition: var(--transition);
   font-weight: 500;
+  background: none;
+  border: none;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
 }
 
-.nav-menu li a:hover {
+.nav-menu li button.nav-link:hover {
   background: rgba(255, 255, 255, 0.1);
   transform: translateX(5px);
 }
 
-.nav-menu li a svg {
+.nav-menu li button.nav-link svg {
   margin-right: 1rem;
   width: 1.2rem;
   text-align: center;
 }
 
-.nav-menu li.active a {
+.nav-menu li.active button.nav-link {
   background: rgba(255, 255, 255, 0.15);
   border-left: 4px solid white;
 }
 
 /* Main Content */
 .main-content {
-  grid-column: 2;
+  grid-column: 2; /* Occupy the second column of the grid */
   padding: 2.5rem;
-  background-color: var(--light-2);
+  background-color: var(--light-2); /* Light background for main content */
   min-height: 100vh;
+  margin-left: var(
+    --sidebar-width
+  ); /* Push content to the right by sidebar width */
 }
 
 .top-bar {
@@ -128,7 +146,7 @@ body {
   transform: translateY(-2px);
 }
 
-.user-profile img {
+.user-avatar {
   width: 2.8rem;
   height: 2.8rem;
   border-radius: 50%;
@@ -136,9 +154,23 @@ body {
   border: 2px solid var(--accent);
 }
 
-.user-profile span {
+.user-name {
   font-weight: 600;
   color: var(--text);
+}
+
+.btn-logout {
+  background: var(--danger);
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.btn-logout:hover {
+  background: var(--danger-light);
 }
 
 /* Content Sections */
@@ -175,6 +207,7 @@ body {
   font-weight: 700;
   position: relative;
   padding-bottom: 0.5rem;
+  margin: 0;
 }
 
 .section-title::after {
@@ -201,6 +234,7 @@ body {
 .welcome-section p {
   color: var(--text-light);
   font-size: 1.1rem;
+  margin: 0;
 }
 
 /* Forms */
@@ -281,6 +315,7 @@ body {
 .task-list {
   list-style: none;
   padding: 0;
+  margin: 0;
 }
 
 .task-item {
@@ -354,6 +389,7 @@ body {
 
 .table-responsive {
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* Empty States */
@@ -363,6 +399,29 @@ body {
   color: var(--text-light);
   background-color: var(--light);
   border-radius: var(--border-radius);
+}
+
+/* Alert */
+.alert {
+  padding: 1rem;
+  border-radius: var(--border-radius);
+  margin-bottom: 1.5rem;
+}
+
+.alert-error {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+/* Loading */
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  font-size: 1.2rem;
+  color: var(--primary);
 }
 
 /* Animations */
@@ -393,11 +452,13 @@ body {
     position: static;
     width: 100%;
     height: auto;
+    padding: 1rem 0;
   }
 
   .main-content {
     grid-column: 1;
     padding: 1.5rem;
+    margin-left: 0;
   }
 
   .form-grid {
@@ -412,6 +473,14 @@ body {
 
   .task-actions {
     justify-content: flex-end;
+  }
+
+  .top-bar {
+    margin-bottom: 1.5rem;
+  }
+
+  .user-profile {
+    padding: 0.5rem 1rem;
   }
 }
 

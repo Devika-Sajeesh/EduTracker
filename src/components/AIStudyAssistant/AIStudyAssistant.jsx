@@ -1,32 +1,38 @@
 import { useState } from "react";
-// Change ONLY to verify path issue
-import { getCachedStudyTips } from "../../services/aiAssistant.js";
+import { getCachedDoubtClarification } from "../../services/aiAssistant.js";
 import { useAuth } from "../../contexts/AuthContext";
 import ReactMarkdown from "react-markdown";
 import "./AIStudyAssistant.css";
 
-export default function AIStudyAssistant({ subject = "General Studies" }) {
+export default function AIStudyAssistant() {
   const { currentUser } = useAuth();
-  const [tips, setTips] = useState(null);
+  const [doubt, setDoubt] = useState("");
+  const [clarification, setClarification] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const fetchTips = async () => {
+  const fetchClarification = async () => {
+    if (!doubt.trim()) {
+      setError("Please enter your doubt.");
+      return;
+    }
+
     setError(null);
     setIsLoading(true);
 
     try {
-      const result = await getCachedStudyTips(
-        subject,
+      const result = await getCachedDoubtClarification(
+        doubt.trim(),
         currentUser?.uid || "anonymous"
       );
-      setTips(result);
+      setClarification(result);
     } catch (err) {
       setError(
         err.response?.data?.error?.message ||
           err.message ||
-          "Failed to fetch tips"
+          "Failed to fetch clarification"
       );
+      setClarification(null);
     } finally {
       setIsLoading(false);
     }
@@ -35,19 +41,27 @@ export default function AIStudyAssistant({ subject = "General Studies" }) {
   return (
     <div className="ai-assistant">
       <div className="ai-header">
-        <h3>AI Study Tips for {subject}</h3>
+        <h3>AI Doubt Clarifier</h3>
+        <textarea
+          placeholder="Type your doubt here..."
+          value={doubt}
+          onChange={(e) => setDoubt(e.target.value)}
+          rows={3}
+          className="doubt-input"
+          disabled={isLoading}
+        />
         <button
-          onClick={fetchTips}
+          onClick={fetchClarification}
           disabled={isLoading}
           className={`ai-button ${isLoading ? "loading" : ""}`}
         >
           {isLoading ? (
             <>
               <span className="spinner"></span>
-              Generating...
+              Clarifying...
             </>
           ) : (
-            "Get AI Study Tips"
+            "Get Clarification"
           )}
         </button>
       </div>
@@ -55,13 +69,13 @@ export default function AIStudyAssistant({ subject = "General Studies" }) {
       {error && (
         <div className="ai-error">
           {error}
-          <button onClick={fetchTips}>Try Again</button>
+          <button onClick={fetchClarification}>Try Again</button>
         </div>
       )}
 
-      {tips && (
-        <div className="ai-tips">
-          <h4>Suggested Study Strategies:</h4>
+      {clarification && (
+        <div className="ai-clarification">
+          <h4>Clarification:</h4>
           <ReactMarkdown
             components={{
               p: ({ node, ...props }) => (
@@ -75,7 +89,7 @@ export default function AIStudyAssistant({ subject = "General Studies" }) {
               ),
             }}
           >
-            {tips}
+            {clarification}
           </ReactMarkdown>
         </div>
       )}

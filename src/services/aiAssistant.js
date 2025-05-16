@@ -13,7 +13,7 @@ import { firebaseConfig } from "../firebase";
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-export async function getStudyTips(topic) {
+export async function getDoubtClarification(doubt) {
   try {
     const apiKey = import.meta.env.VITE_GROQ_API_KEY;
     if (!apiKey) throw new Error("API key not configured");
@@ -25,16 +25,16 @@ export async function getStudyTips(topic) {
           {
             role: "system",
             content:
-              "You are a helpful study assistant. Provide exactly 3 concise bullet-point study tips in markdown format:\n- Tip 1\n- Tip 2\n- Tip 3\nKeep each tip under 15 words.",
+              "You are a helpful study assistant. Provide a clear, concise summary to clarify the student's doubt. Keep it under 50 words.",
           },
           {
             role: "user",
-            content: `Provide study tips for: ${topic}`,
+            content: `Clarify this doubt: ${doubt}`,
           },
         ],
         model: "llama3-70b-8192",
         temperature: 0.7,
-        max_tokens: 150,
+        max_tokens: 100,
       },
       {
         headers: {
@@ -45,10 +45,10 @@ export async function getStudyTips(topic) {
       }
     );
 
-    const tips = response.data.choices[0]?.message?.content;
-    if (!tips) throw new Error("No tips in response");
+    const clarification = response.data.choices[0]?.message?.content;
+    if (!clarification) throw new Error("No clarification in response");
 
-    return tips;
+    return clarification;
   } catch (error) {
     console.error("API Error:", {
       message: error.message,
@@ -59,8 +59,8 @@ export async function getStudyTips(topic) {
   }
 }
 
-export async function getCachedStudyTips(topic, userId) {
-  const cacheRef = doc(db, "studyCache", `${userId}_${topic}`);
+export async function getCachedDoubtClarification(doubt, userId) {
+  const cacheRef = doc(db, "doubtCache", `${userId}_${doubt}`);
 
   try {
     // Check cache first
@@ -72,21 +72,21 @@ export async function getCachedStudyTips(topic, userId) {
       if (!isExpired) return cacheData.content;
     }
 
-    // Fetch fresh tips
-    const tips = await getStudyTips(topic);
+    // Fetch fresh clarification
+    const clarification = await getDoubtClarification(doubt);
 
     // Update cache
     await setDoc(
       cacheRef,
       {
-        content: tips,
+        content: clarification,
         timestamp: serverTimestamp(),
-        topic: topic,
+        doubt: doubt,
       },
       { merge: true }
     );
 
-    return tips;
+    return clarification;
   } catch (error) {
     console.error("Cache Error:", error);
     throw error;
