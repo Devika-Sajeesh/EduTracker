@@ -29,6 +29,7 @@ import {
 import PomodoroTimer from "../PomodoroTimer";
 import AIStudyAssistant from "../AIStudyAssistant/AIStudyAssistant";
 import { useNavigate } from "react-router-dom";
+import StudyTimeChart from "../StudyTimeAnalytics/StudyTimeChart";
 
 export default function Dashboard() {
   const [userData, setUserData] = useState(null);
@@ -48,6 +49,7 @@ export default function Dashboard() {
   const marksRef = useRef(null);
   const progressRef = useRef(null);
   const aiRef = useRef(null);
+  const analyticsRef = useRef(null);
 
   const navigate = useNavigate();
 
@@ -314,6 +316,17 @@ export default function Dashboard() {
                 <FontAwesomeIcon icon={faChartLine} /> My Marks
               </button>
             </li>
+            <li className={activeTab === "analytics" ? "active" : ""}>
+              <button
+                onClick={() => {
+                  setActiveTab("analytics");
+                  scrollToSection(analyticsRef);
+                }}
+                className="nav-link"
+              >
+                <FontAwesomeIcon icon={faChartBar} /> Analytics
+              </button>
+            </li>
             <li className={activeTab === "ai" ? "active" : ""}>
               <button
                 onClick={() => {
@@ -466,6 +479,12 @@ export default function Dashboard() {
                 <FontAwesomeIcon icon={faClock} /> Log Time
               </button>
             </form>
+          </section>
+          <section className="section" ref={analyticsRef}>
+            <div className="section-header">
+              <h3 className="section-title">Study Analytics</h3>
+            </div>
+            <StudyTimeChart userId={auth.currentUser?.uid} />
           </section>
 
           <section className="section" ref={aiRef}>

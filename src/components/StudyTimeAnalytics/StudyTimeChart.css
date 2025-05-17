@@ -1,0 +1,38 @@
+.chart-container {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  margin-bottom: 2rem;
+}
+
+.chart-controls {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.chart-controls button {
+  padding: 0.5rem 1rem;
+  border: none;
+  background: #f1f3f5;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
+}
+
+.chart-controls button.active {
+  background: #4e4376;
+  color: white;
+}
+
+.chart-controls button:hover {
+  transform: translateY(-2px);
+}
+
+.chart-loading {
+  text-align: center;
+  padding: 2rem;
+  color: #6c757d;
+}
