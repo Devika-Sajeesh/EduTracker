@@ -166,12 +166,6 @@ Want to make EduTrack better?
 
 ---
 
-## 📄 License
-
-MIT License © 2025 [Devika Sajeesh](https://github.com/devika-sajeesh)
-
----
-
 **Built with ❤️ using React & Firebase**
 
 ```
