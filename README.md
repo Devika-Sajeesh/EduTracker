@@ -1,7 +1,7 @@
 # 🎓 EduTrack — Your Personal Study Management Dashboard
 
 EduTrack is a **React + Firebase** powered web app that helps students manage study tasks, log study time, track academic marks, and stay organized — all in one dashboard with a clean and intuitive UI.
-
+https://edutrack-dfbe3.web.app/
 ---
 
 ## 🚀 Features
@@ -65,12 +65,6 @@ src/
 
 ---
 
-## 📸 Screenshots
-
-> _Add your UI screenshots here once your UI is stable_
-
----
-
 ## ⚙️ Getting Started
 
 ### 1️⃣ Clone the Repo
@@ -115,7 +109,7 @@ Update `firebase.js` to read from `import.meta.env`.
 npm run dev
 ```
 
-Visit: [http://localhost:5173](http://localhost:5173)
+Visit: [https://edutrack-dfbe3.web.app/](https://edutrack-dfbe3.web.app/)
 
 ---
 
