@@ -23,8 +23,8 @@ import {
 import "./StudyTimeChart.css";
 
 export default function StudyTimeChart({ userId }) {
-  const [sessions, setSessions] = useState([]); // raw Firestore data
-  const [chartData, setChartData] = useState([]); // processed chart data
+  const [sessions, setSessions] = useState([]);
+  const [chartData, setChartData] = useState([]);
   const [timeRange, setTimeRange] = useState("week");
   const [loading, setLoading] = useState(true);
 
@@ -154,29 +154,74 @@ export default function StudyTimeChart({ userId }) {
         </button>
       </div>
 
-      <div className="session-list">
-        {sessions.map((session) => (
-          <div key={session.id} className="session-item">
-            <span>
-              {session.date.toLocaleDateString("en-IN")}:{" "}
-              {Math.round((session.minutes / 60) * 10) / 10} hours
-            </span>
-            <button onClick={() => handleEdit(session)}>Edit</button>
-            <button onClick={() => handleDelete(session.id)}>Delete</button>
-          </div>
-        ))}
-      </div>
+      {sessions.length > 0 && (
+        <div className="session-list">
+          {sessions.map((session) => (
+            <div key={session.id} className="session-item">
+              <span>
+                {session.date.toLocaleDateString("en-IN")}:{" "}
+                {Math.round((session.minutes / 60) * 10) / 10} hrs
+              </span>
+              <button onClick={() => handleEdit(session)}>Edit</button>
+              <button onClick={() => handleDelete(session.id)}>Delete</button>
+            </div>
+          ))}
+        </div>
+      )}
 
-      <ResponsiveContainer width="100%" height={400}>
+      <ResponsiveContainer width="100%" height={350}>
         <BarChart data={chartData}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="name" />
-          <YAxis
-            label={{ value: "Hours", angle: -90, position: "insideLeft" }}
+          <CartesianGrid
+            strokeDasharray="3 3"
+            stroke="rgba(255,255,255,0.06)"
+            vertical={false}
           />
-          <Tooltip formatter={(value) => [`${value} hours`, "Study Time"]} />
-          <Legend />
-          <Bar dataKey="minutes" fill="#8884d8" name="Study Time" />
+          <XAxis
+            dataKey="name"
+            tick={{ fill: "#7a8f92", fontSize: 12 }}
+            axisLine={{ stroke: "rgba(255,255,255,0.08)" }}
+            tickLine={false}
+          />
+          <YAxis
+            label={{
+              value: "Hours",
+              angle: -90,
+              position: "insideLeft",
+              style: { fill: "#7a8f92", fontSize: 12 },
+            }}
+            tick={{ fill: "#7a8f92", fontSize: 12 }}
+            axisLine={{ stroke: "rgba(255,255,255,0.08)" }}
+            tickLine={false}
+          />
+          <Tooltip
+            formatter={(value) => [`${value} hours`, "Study Time"]}
+            contentStyle={{
+              background: "#1c1c2e",
+              border: "1px solid rgba(255,255,255,0.12)",
+              borderRadius: "8px",
+              boxShadow: "0 4px 16px rgba(0,0,0,0.4)",
+              color: "#f6f6f2",
+            }}
+            labelStyle={{ color: "#f6f6f2" }}
+            itemStyle={{ color: "#388087" }}
+            cursor={{ fill: "rgba(56, 128, 135, 0.06)" }}
+          />
+          <Legend
+            wrapperStyle={{ color: "#b8c4c6", fontSize: "0.85rem" }}
+          />
+          <Bar
+            dataKey="minutes"
+            name="Study Time"
+            fill="url(#barGradient)"
+            radius={[6, 6, 0, 0]}
+            maxBarSize={50}
+          />
+          <defs>
+            <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#388087" stopOpacity={1} />
+              <stop offset="100%" stopColor="#4a9da4" stopOpacity={0.7} />
+            </linearGradient>
+          </defs>
         </BarChart>
       </ResponsiveContainer>
     </div>

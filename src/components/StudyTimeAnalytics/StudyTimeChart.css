@@ -1,38 +1,157 @@
+/* ═══════════════════════════════════════════════════════════
+   Study Time Chart — Dark Glass Container
+   ═══════════════════════════════════════════════════════════ */
+
 .chart-container {
-  background: white;
-  padding: 1.5rem;
-  border-radius: 10px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  margin-bottom: 2rem;
+  border-radius: var(--border-radius);
 }
 
+/* ── Controls ── */
 .chart-controls {
   display: flex;
-  gap: 1rem;
+  gap: 8px;
   margin-bottom: 1.5rem;
+  flex-wrap: wrap;
 }
 
 .chart-controls button {
-  padding: 0.5rem 1rem;
-  border: none;
-  background: #f1f3f5;
-  border-radius: 20px;
+  padding: 8px 18px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-input);
+  border-radius: var(--border-radius-full);
   cursor: pointer;
-  transition: all 0.3s ease;
-  font-size: 0.9rem;
+  transition: all var(--transition-fast);
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  font-family: inherit;
 }
 
 .chart-controls button.active {
-  background: #4e4376;
+  background: var(--gradient-primary);
   color: white;
+  border-color: transparent;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(var(--accent-primary-rgb), 0.25);
 }
 
-.chart-controls button:hover {
+.chart-controls button:not(.active):hover {
+  background: var(--bg-glass-hover);
+  color: var(--text-primary);
   transform: translateY(-2px);
 }
 
+/* ── Session List ── */
+.session-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 1.5rem;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.session-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: var(--bg-glass);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--border-radius-sm);
+  transition: all var(--transition-fast);
+  gap: 8px;
+}
+
+.session-item:hover {
+  background: var(--bg-glass-hover);
+  border-color: var(--border-medium);
+}
+
+.session-item span {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  font-family: "JetBrains Mono", monospace;
+}
+
+.session-item button {
+  padding: 5px 12px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-input);
+  border-radius: var(--border-radius-sm);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  font-family: inherit;
+}
+
+.session-item button:hover {
+  background: var(--bg-glass-hover);
+  color: var(--text-primary);
+}
+
+.session-item button:last-child {
+  color: var(--danger);
+  border-color: rgba(248, 113, 113, 0.2);
+}
+
+.session-item button:last-child:hover {
+  background: var(--danger-bg);
+}
+
+/* ── Chart Area ── */
+.chart-container .recharts-wrapper {
+  margin: 0 auto;
+}
+
+.chart-container .recharts-cartesian-grid line {
+  stroke: var(--border-subtle);
+}
+
+.chart-container .recharts-text {
+  fill: var(--text-muted);
+  font-size: 0.75rem;
+}
+
+.chart-container .recharts-tooltip-wrapper .recharts-default-tooltip {
+  background: var(--bg-tertiary) !important;
+  border: 1px solid var(--border-medium) !important;
+  border-radius: var(--border-radius-sm) !important;
+  box-shadow: var(--shadow-md) !important;
+}
+
+.chart-container .recharts-tooltip-label {
+  color: var(--text-primary) !important;
+}
+
+.chart-container .recharts-tooltip-item {
+  color: var(--accent-primary) !important;
+}
+
+.chart-container .recharts-legend-item-text {
+  color: var(--text-secondary) !important;
+}
+
+/* ── Loading ── */
 .chart-loading {
   text-align: center;
-  padding: 2rem;
-  color: #6c757d;
+  padding: 3rem 1.5rem;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.chart-loading::before {
+  content: "";
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--border-medium);
+  border-top-color: var(--accent-primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
 }

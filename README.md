@@ -1,165 +1,128 @@
-# 🎓 EduTrack — Your Personal Study Management Dashboard
+# EduTrack — Smart Study Management Dashboard
 
-EduTrack is a **React + Firebase** powered web app that helps students manage study tasks, log study time, track academic marks, and stay organized — all in one dashboard with a clean and intuitive UI.
-https://edutrack-dfbe3.web.app/
----
+EduTrack is a **React + Firebase** powered web app that helps students manage study tasks, log study time, track academic marks, and stay organized — all in one dashboard with a clean and intuitive dark-themed UI.
 
-## 🚀 Features
-
-- 🔐 Firebase Authentication (Email/Password)  
-- ✅ Realtime Task Management (Add, Complete, Delete)  
-- ⏱️ Pomodoro Timer for focused study sessions  
-- 🧠 AI Study Assistant (GPT-based)  
-- 📊 Marks Tracker per Subject with timestamps  
-- 🕒 Study Time Logger  
-- 🔄 Live Firestore Sync using Listeners  
-- 📱 Responsive Layout with Smooth Scrolling Navigation  
-- 🎨 Custom Sidebar UI with FontAwesome Icons  
+[**Live Demo**](https://edutrack-dfbe3.web.app/)
 
 ---
 
-## 🛠️ Tech Stack
+## Features
+
+- **Authentication**: Secure Email/Password login with Firebase Auth.
+- **Task Management**: Realtime Add, Complete, and Delete tasks.
+- **Pomodoro Timer**: Circular progress timer with Focus, Short Break, and Long Break modes.
+- **AI Study Assistant**: Chat-like interface to clarify doubts using Groq AI (Llama 3).
+- **Marks Tracker**: Log and track grades per subject.
+- **Study Analytics**: Visualize study time with interactive charts (Weekly/Monthly/Yearly).
+- **Responsive Design**: Mobile-friendly layout with glassmorphism UI.
+
+---
+
+## Tech Stack
 
 | Layer    | Tools                            |
 | -------- | -------------------------------- |
 | Frontend | React + Vite                     |
 | Backend  | Firebase (Auth + Firestore)      |
-| Styling  | CSS Modules + Custom Theme       |
+| Styling  | CSS Modules + Custom Dark Theme  |
 | Database | Cloud Firestore (NoSQL)          |
+| AI       | Groq API (Llama 3)               |
 | Icons    | FontAwesome                      |
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
-
 src/
 ├── components/
-│   ├── AIStudyAssistant/
-│   │   └── (AIStudyAssistant.jsx, AIStudyAssistant.css)
-│   ├── Auth/
-│   │   └── (Auth.jsx, Auth.css)
-│   ├── Dashboard/
-│   │   ├── Dashboard.jsx
-│   │   └── Dashboard.css
-│   ├── PomodoroTimer/
-│   │   ├── PomodoroTimer.jsx
-│   │   └── PomodoroTimer.css
-│   └── ProtectedRoute.jsx
-│
-├── contexts/
-│   └── (AuthContext.jsx)
-│
+│   ├── AIStudyAssistant/    # AI Chat Interface
+│   ├── Auth/                # Login/Signup Pages
+│   ├── Dashboard/           # Main Dashboard View
+│   ├── PomodoroTimer/       # Study Timer
+│   └── StudyTimeAnalytics/  # Charts & Graphs
 ├── services/
-│   └── (aiAssistant.js)
-│
-├── App.jsx
-├── App.css
-├── firebase.js
-├── index.css
-├── main.jsx
-
-
-````
+│   └── aiAssistant.js       # AI API Service
+├── App.jsx                  # Main Router
+├── firebase.js              # Firebase Config
+└── index.css                # Global Styles & Theme
+```
 
 ---
 
-## ⚙️ Getting Started
+## Getting Started
 
-### 1️⃣ Clone the Repo
+### 1. Clone the Repo
 
 ```bash
 git clone https://github.com/Devika-Sajeesh/EduTrack.git
 cd EduTrack
-````
+```
 
-### 2️⃣ Install Dependencies
+### 2. Install Dependencies
 
 ```bash
 npm install
 ```
 
-### 3️⃣ Firebase Configuration
+### 3. Firebase Configuration
 
 * Go to [Firebase Console](https://console.firebase.google.com/)
-* Create a new project
-* Enable:
-
-  * Firestore Database
-  * Email/Password Authentication
-* Grab your Firebase config and create a `.env` file in the root:
+* Create a new project and enable **Firestore Database** and **Authentication**.
+* Create a `.env` file in the root directory:
 
 ```env
-VITE_FIREBASE_API_KEY=YOUR_API_KEY
-VITE_FIREBASE_AUTH_DOMAIN=YOUR_PROJECT.firebaseapp.com
-VITE_FIREBASE_PROJECT_ID=YOUR_PROJECT_ID
-VITE_FIREBASE_STORAGE_BUCKET=YOUR_PROJECT.appspot.com
-VITE_FIREBASE_MESSAGING_SENDER_ID=YOUR_SENDER_ID
-VITE_FIREBASE_APP_ID=YOUR_APP_ID
+VITE_FIREBASE_API_KEY=your_api_key
+VITE_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
+VITE_FIREBASE_PROJECT_ID=your_project_id
+VITE_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
+VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+VITE_FIREBASE_APP_ID=your_app_id
+VITE_GROQ_API_KEY=your_groq_api_key
 ```
 
-Update `firebase.js` to read from `import.meta.env`.
-
----
-
-### 4️⃣ Run the App Locally
+### 4. Run Locally
 
 ```bash
 npm run dev
 ```
 
-Visit: [https://edutrack-dfbe3.web.app/](https://edutrack-dfbe3.web.app/)
+Visit: [http://localhost:5173](http://localhost:5173)
 
 ---
 
-## 🌍 Deploying EduTrack
+## Deployment
 
-You can deploy with Firebase Hosting:
+EduTrack is configured for **Firebase Hosting**.
 
-```bash
-npm run build
-firebase login
-firebase init hosting
-firebase deploy
-```
+1. **Build the project**:
+   ```bash
+   npm run build
+   ```
 
-Make sure to choose the `dist/` folder as your build directory when prompted.
+2. **Initialize Hosting** (if not done):
+   ```bash
+   firebase init hosting
+   # Select your project
+   # Public directory: dist
+   # Configure as SPA: Yes
+   ```
 
----
-
-## 🧠 AI Study Assistant
-
-The AI section of the dashboard connects to a GPT-based assistant (implementation assumed through your own backend or 3rd-party API).
-
-> You can later integrate OpenAI's GPT API with a route like `/api/ask` and call it from the `AIStudyAssistant` component.
-
----
-
-## 🔮 Future Enhancements
-
-* [ ] Weekly/Monthly Charts (Study Time & Marks)
-* [ ] Admin/Teacher Panel
-* [ ] Progress Goals and Gamification System
-* [ ] Push Notifications & Email Reminders
-* [ ] Offline Support & Caching
-* [ ] Dark Mode Toggle
+3. **Deploy**:
+   ```bash
+   firebase deploy --only hosting
+   ```
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
-Want to make EduTrack better?
-
-1. **Fork** this repo
-2. Create a new branch: `git checkout -b feature-xyz`
-3. Make your changes
-4. Commit: `git commit -m "Add feature"`
-5. Push: `git push origin feature-xyz`
-6. **Open a Pull Request**
+1. Fork the repo
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
 ---
 
-**Built with ❤️ using React & Firebase**
-
-```
+**Built with React & Firebase**

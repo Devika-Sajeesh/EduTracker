@@ -16,15 +16,13 @@ import { db, auth } from "../firebase";
 import "./PomodoroTimer.css";
 
 const PomodoroTimer = () => {
-  // Timer states
   const [minutes, setMinutes] = useState(25);
   const [seconds, setSeconds] = useState(0);
   const [isActive, setIsActive] = useState(false);
-  const [mode, setMode] = useState("pomodoro"); // pomodoro/shortBreak/longBreak
+  const [mode, setMode] = useState("pomodoro");
   const [cycles, setCycles] = useState(0);
   const [completedSessions, setCompletedSessions] = useState(0);
 
-  // Configuration
   const timerRef = useRef(null);
   const settings = {
     pomodoro: 25,
@@ -32,19 +30,22 @@ const PomodoroTimer = () => {
     longBreak: 15,
   };
 
-  // Start/stop timer
+  const modeLabels = {
+    pomodoro: "Focus Time",
+    shortBreak: "Short Break",
+    longBreak: "Long Break",
+  };
+
   const toggleTimer = () => {
     setIsActive(!isActive);
   };
 
-  // Reset timer to current mode's default
   const resetTimer = () => {
     setIsActive(false);
     setSeconds(0);
     setMinutes(settings[mode]);
   };
 
-  // Switch between timer modes
   const switchMode = (newMode) => {
     setIsActive(false);
     setMode(newMode);
@@ -52,7 +53,6 @@ const PomodoroTimer = () => {
     setMinutes(settings[newMode]);
   };
 
-  // Save completed session to Firestore
   const saveSession = async () => {
     if (!auth.currentUser) return;
 
@@ -70,7 +70,6 @@ const PomodoroTimer = () => {
     }
   };
 
-  // Timer logic
   useEffect(() => {
     if (isActive) {
       timerRef.current = setInterval(() => {
@@ -80,13 +79,11 @@ const PomodoroTimer = () => {
           setMinutes(minutes - 1);
           setSeconds(59);
         } else {
-          // Timer completed
           clearInterval(timerRef.current);
           setIsActive(false);
           const audio = new Audio("public/sounds/timer-end.mp3");
           audio.play();
 
-          // Handle mode switching
           if (mode === "pomodoro") {
             const newCycles = cycles + 1;
             setCycles(newCycles);
@@ -108,15 +105,22 @@ const PomodoroTimer = () => {
     return () => clearInterval(timerRef.current);
   }, [isActive, minutes, seconds, mode]);
 
-  // Format time display
   const formatTime = () => {
     return `${minutes.toString().padStart(2, "0")}:${seconds
       .toString()
       .padStart(2, "0")}`;
   };
 
+  // SVG ring calculations
+  const radius = 95;
+  const circumference = 2 * Math.PI * radius;
+  const totalSeconds = settings[mode] * 60;
+  const elapsedSeconds = totalSeconds - (minutes * 60 + seconds);
+  const progress = elapsedSeconds / totalSeconds;
+  const strokeDashoffset = circumference * (1 - progress);
+
   return (
-    <div className={`pomodoro-timer ${mode}`}>
+    <div className={`pomodoro-timer ${mode} ${isActive ? "active-timer" : ""}`}>
       <div className="timer-modes">
         <button
           className={mode === "pomodoro" ? "active" : ""}
@@ -138,8 +142,27 @@ const PomodoroTimer = () => {
         </button>
       </div>
 
-      <div className="timer-display">
-        <h2>{formatTime()}</h2>
+      <div className="timer-ring-container">
+        <svg className="timer-ring" viewBox="0 0 220 220">
+          <circle
+            className="timer-ring-bg"
+            cx="110"
+            cy="110"
+            r={radius}
+          />
+          <circle
+            className="timer-ring-progress"
+            cx="110"
+            cy="110"
+            r={radius}
+            strokeDasharray={circumference}
+            strokeDashoffset={strokeDashoffset}
+          />
+        </svg>
+        <div className="timer-time-display">
+          <h2>{formatTime()}</h2>
+          <span className="timer-mode-label">{modeLabels[mode]}</span>
+        </div>
       </div>
 
       <div className="timer-controls">
@@ -156,9 +179,9 @@ const PomodoroTimer = () => {
       <div className="timer-stats">
         <p>
           <FontAwesomeIcon icon={faCheck} />
-          Completed Sessions: {completedSessions}
+          Sessions: {completedSessions}
         </p>
-        <p>Current Cycle: {cycles % 4}/4</p>
+        <p>Cycle: {cycles % 4}/4</p>
       </div>
     </div>
   );

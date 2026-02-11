@@ -1,185 +1,238 @@
-/* Pomodoro Timer Styles */
+/* ═══════════════════════════════════════════════════════════
+   Pomodoro Timer — SVG Circular Ring + Dark Glass
+   ═══════════════════════════════════════════════════════════ */
+
 .pomodoro-timer {
-  background: var(--accent);
-  color: white;
+  background: var(--bg-glass);
+  border: 1px solid var(--border-subtle);
   padding: 2rem;
-  border-radius: var(--border-radius);
+  border-radius: var(--border-radius-lg);
   text-align: center;
-  box-shadow: var(--box-shadow);
-  transition: var(--transition);
-  margin-bottom: 2rem;
-  overflow: hidden;
+  transition: all var(--transition);
   position: relative;
+  overflow: hidden;
 }
 
-/* Timer State Variations */
-.pomodoro-timer.pomodoro {
-  background: var(--danger);
-  background: linear-gradient(135deg, var(--danger), #c0392b);
-}
-
-.pomodoro-timer.shortBreak {
-  background: var(--success);
-  background: linear-gradient(135deg, var(--success), #27ae60);
-}
-
-.pomodoro-timer.longBreak {
-  background: var(--primary);
-  background: linear-gradient(135deg, var(--primary), #2c3e50);
-}
-
-/* Timer Modes Selector */
+/* ── Mode Selector ── */
 .timer-modes {
   display: flex;
   justify-content: center;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
+  gap: 8px;
+  margin-bottom: 2rem;
   flex-wrap: wrap;
 }
 
 .timer-modes button {
-  background: rgba(255, 255, 255, 0.2);
-  border: none;
-  padding: 0.5rem 1.5rem;
-  border-radius: 50px;
-  color: white;
+  background: var(--bg-input);
+  border: 1px solid var(--border-subtle);
+  padding: 8px 20px;
+  border-radius: var(--border-radius-full);
+  color: var(--text-secondary);
   cursor: pointer;
-  transition: var(--transition);
+  transition: all var(--transition-fast);
   font-weight: 500;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   min-width: 100px;
+  font-family: inherit;
 }
 
 .timer-modes button.active {
-  background: white;
-  color: var(--text);
+  color: white;
   font-weight: 600;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-color: transparent;
 }
 
 .timer-modes button:not(.active):hover {
-  background: rgba(255, 255, 255, 0.3);
+  background: var(--bg-glass-hover);
+  color: var(--text-primary);
   transform: translateY(-2px);
 }
 
-/* Timer Display */
-.timer-display {
-  margin: 1.5rem 0;
-  position: relative;
+/* Mode-specific active button colors */
+.pomodoro-timer.pomodoro .timer-modes button.active {
+  background: var(--gradient-danger);
+  box-shadow: 0 4px 15px rgba(248, 113, 113, 0.3);
 }
 
-.timer-display h2 {
-  font-size: 5rem;
+.pomodoro-timer.shortBreak .timer-modes button.active {
+  background: var(--gradient-success);
+  box-shadow: 0 4px 15px rgba(52, 211, 153, 0.3);
+}
+
+.pomodoro-timer.longBreak .timer-modes button.active {
+  background: var(--gradient-primary);
+  box-shadow: 0 4px 15px rgba(var(--accent-primary-rgb), 0.3);
+}
+
+/* ── SVG Ring ── */
+.timer-ring-container {
+  position: relative;
+  width: 220px;
+  height: 220px;
+  margin: 0 auto 1.5rem;
+}
+
+.timer-ring {
+  transform: rotate(-90deg);
+  width: 100%;
+  height: 100%;
+}
+
+.timer-ring-bg {
+  fill: none;
+  stroke: var(--border-subtle);
+  stroke-width: 6;
+}
+
+.timer-ring-progress {
+  fill: none;
+  stroke-width: 6;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 1s linear, stroke 0.5s ease;
+  filter: drop-shadow(0 0 8px currentColor);
+}
+
+/* Mode-specific ring colors */
+.pomodoro-timer.pomodoro .timer-ring-progress {
+  stroke: var(--danger);
+}
+
+.pomodoro-timer.shortBreak .timer-ring-progress {
+  stroke: var(--success);
+}
+
+.pomodoro-timer.longBreak .timer-ring-progress {
+  stroke: var(--accent-primary);
+}
+
+.timer-time-display {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.timer-time-display h2 {
+  font-size: 3.2rem;
   margin: 0;
   font-weight: 700;
   letter-spacing: -2px;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  font-family: "Roboto Mono", monospace;
+  font-family: "JetBrains Mono", monospace;
+  color: var(--text-primary);
+  line-height: 1;
 }
 
-/* Timer Controls */
+.timer-mode-label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-top: 6px;
+  font-weight: 600;
+}
+
+/* ── Controls ── */
 .timer-controls {
   display: flex;
   justify-content: center;
-  gap: 1.5rem;
-  margin: 2rem 0 1rem;
+  gap: 12px;
+  margin: 1.5rem 0 1rem;
 }
 
 .timer-controls button {
-  background: white;
-  color: var(--text);
-  border: none;
-  padding: 0.8rem 2rem;
-  border-radius: 50px;
+  background: var(--bg-input);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+  padding: 10px 24px;
+  border-radius: var(--border-radius-full);
   font-weight: 600;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  transition: var(--transition);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  text-transform: uppercase;
-  font-size: 0.9rem;
-  letter-spacing: 0.5px;
+  gap: 8px;
+  transition: all var(--transition);
+  font-size: 0.85rem;
+  font-family: inherit;
 }
 
 .timer-controls button:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  background: var(--bg-glass-hover);
+  border-color: var(--border-medium);
+  transform: translateY(-2px);
 }
 
-.timer-controls button:active {
-  transform: translateY(1px);
+.timer-controls button:first-child {
+  background: var(--gradient-primary);
+  border-color: transparent;
+  color: white;
+  box-shadow: 0 4px 15px rgba(var(--accent-primary-rgb), 0.3);
 }
 
-/* Timer Stats */
+.timer-controls button:first-child:hover {
+  box-shadow: 0 6px 20px rgba(var(--accent-primary-rgb), 0.4);
+}
+
+/* ── Stats ── */
 .timer-stats {
   display: flex;
   justify-content: center;
-  gap: 2rem;
-  font-size: 0.9rem;
-  opacity: 0.9;
-  margin-top: 1.5rem;
+  gap: 16px;
+  font-size: 0.85rem;
+  margin-top: 1rem;
   flex-wrap: wrap;
 }
 
 .timer-stats p {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  background: rgba(255, 255, 255, 0.1);
-  padding: 0.5rem 1rem;
-  border-radius: 50px;
+  gap: 6px;
+  background: var(--bg-glass);
+  border: 1px solid var(--border-subtle);
+  padding: 8px 16px;
+  border-radius: var(--border-radius-full);
+  color: var(--text-secondary);
+  font-size: 0.8rem;
 }
 
-/* Responsive Design */
+/* ── Active pulse ── */
+.pomodoro-timer.active-timer .timer-ring-container {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* ── Responsive ── */
 @media (max-width: 768px) {
   .pomodoro-timer {
     padding: 1.5rem;
   }
 
-  .timer-display h2 {
-    font-size: 3.5rem;
+  .timer-ring-container {
+    width: 180px;
+    height: 180px;
+  }
+
+  .timer-time-display h2 {
+    font-size: 2.5rem;
   }
 
   .timer-modes {
-    gap: 0.75rem;
+    gap: 6px;
   }
 
   .timer-modes button {
-    padding: 0.5rem 1rem;
+    padding: 6px 14px;
     min-width: auto;
     flex-grow: 1;
   }
 
   .timer-controls {
-    gap: 1rem;
-    flex-wrap: wrap;
+    gap: 8px;
   }
 
   .timer-controls button {
-    padding: 0.7rem 1.2rem;
+    padding: 8px 16px;
     font-size: 0.8rem;
   }
-
-  .timer-stats {
-    gap: 1rem;
-  }
-}
-
-/* Animation for Timer */
-@keyframes pulse {
-  0% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.02);
-  }
-  100% {
-    transform: scale(1);
-  }
-}
-
-.pomodoro-timer.running {
-  animation: pulse 2s infinite;
 }

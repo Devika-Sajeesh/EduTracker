@@ -25,6 +25,9 @@ import {
   faPlus,
   faClock,
   faRobot,
+  faBars,
+  faTimes,
+  faBook,
 } from "@fortawesome/free-solid-svg-icons";
 import PomodoroTimer from "../PomodoroTimer";
 import AIStudyAssistant from "../AIStudyAssistant/AIStudyAssistant";
@@ -42,6 +45,7 @@ export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Refs for smooth scroll
   const dashboardRef = useRef(null);
@@ -52,6 +56,13 @@ export default function Dashboard() {
   const analyticsRef = useRef(null);
 
   const navigate = useNavigate();
+
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return "Good Morning";
+    if (hour < 17) return "Good Afternoon";
+    return "Good Evening";
+  };
 
   const formatDate = useCallback((date) => {
     if (!date) return "N/A";
@@ -75,6 +86,7 @@ export default function Dashboard() {
 
   const scrollToSection = useCallback((ref) => {
     ref?.current?.scrollIntoView({ behavior: "smooth" });
+    setSidebarOpen(false);
   }, []);
 
   const loadStudentData = useCallback((userId) => {
@@ -262,11 +274,16 @@ export default function Dashboard() {
     }
   };
 
+  const avgScore =
+    marks.length > 0
+      ? Math.round(marks.reduce((sum, m) => sum + m.score, 0) / marks.length)
+      : 0;
+
   if (loading) {
     return <div className="loading">Loading dashboard...</div>;
   }
 
-  if (error) {
+  if (error && !userData) {
     return (
       <div className="error">
         {error}
@@ -277,9 +294,24 @@ export default function Dashboard() {
 
   return (
     <div className="dashboard-container">
-      <aside className="sidebar">
+      {/* Mobile hamburger */}
+      <button
+        className="mobile-menu-toggle"
+        onClick={() => setSidebarOpen(!sidebarOpen)}
+        aria-label="Toggle menu"
+      >
+        <FontAwesomeIcon icon={sidebarOpen ? faTimes : faBars} />
+      </button>
+
+      {/* Sidebar overlay for mobile */}
+      <div
+        className={`sidebar-overlay ${sidebarOpen ? "visible" : ""}`}
+        onClick={() => setSidebarOpen(false)}
+      />
+
+      <aside className={`sidebar ${sidebarOpen ? "open" : ""}`}>
         <div className="logo">
-          <h1>EduTrack</h1>
+          <h1>📚 EduTrack</h1>
         </div>
         <nav className="nav-menu">
           <ul>
@@ -338,7 +370,6 @@ export default function Dashboard() {
                 <FontAwesomeIcon icon={faRobot} /> AI Help
               </button>
             </li>
-
             <li className={activeTab === "progress" ? "active" : ""}>
               <button
                 onClick={() => {
@@ -347,7 +378,7 @@ export default function Dashboard() {
                 }}
                 className="nav-link"
               >
-                <FontAwesomeIcon icon={faClock} /> Pomodoro Timer
+                <FontAwesomeIcon icon={faClock} /> Pomodoro
               </button>
             </li>
           </ul>
@@ -375,15 +406,35 @@ export default function Dashboard() {
         <div className="content-area">
           {error && <div className="alert alert-error">{error}</div>}
 
+          {/* Welcome Section with Stats */}
           <section className="section welcome-section" ref={dashboardRef}>
             <div className="section-header">
               <h2 className="section-title">
-                Welcome, {userData?.fullName || "Student"}!
+                {getGreeting()}, {userData?.fullName?.split(" ")[0] || "Student"}
               </h2>
             </div>
             <p>Track your study tasks, deadlines, and academic progress.</p>
+
+            <div className="stat-cards">
+              <div className="stat-card">
+                <span className="stat-card-icon"><FontAwesomeIcon icon={faTasks} /></span>
+                <span className="stat-card-value">{tasks.length}</span>
+                <span className="stat-card-label">Active Tasks</span>
+              </div>
+              <div className="stat-card">
+                <span className="stat-card-icon"><FontAwesomeIcon icon={faChartLine} /></span>
+                <span className="stat-card-value">{avgScore}%</span>
+                <span className="stat-card-label">Avg Score</span>
+              </div>
+              <div className="stat-card">
+                <span className="stat-card-icon"><FontAwesomeIcon icon={faBook} /></span>
+                <span className="stat-card-value">{marks.length}</span>
+                <span className="stat-card-label">Subjects</span>
+              </div>
+            </div>
           </section>
 
+          {/* Add Task */}
           <section className="section" ref={tasksRef}>
             <div className="section-header">
               <h3 className="section-title">Add New Task</h3>
@@ -415,10 +466,11 @@ export default function Dashboard() {
             </form>
           </section>
 
+          {/* Current Tasks */}
           <section className="section">
             <div className="section-header">
               <h3 className="section-title">
-                My Current Tasks ({tasks.length})
+                My Tasks ({tasks.length})
               </h3>
             </div>
             {tasks.length > 0 ? (
@@ -439,14 +491,14 @@ export default function Dashboard() {
                           className="btn btn-complete"
                           aria-label="Complete task"
                         >
-                          <FontAwesomeIcon icon={faCheck} /> Complete
+                          <FontAwesomeIcon icon={faCheck} /> Done
                         </button>
                         <button
                           onClick={() => deleteTask(task.id)}
                           className="btn btn-delete"
                           aria-label="Delete task"
                         >
-                          <FontAwesomeIcon icon={faTrash} /> Delete
+                          <FontAwesomeIcon icon={faTrash} />
                         </button>
                       </div>
                     </li>
@@ -454,11 +506,12 @@ export default function Dashboard() {
               </ul>
             ) : (
               <div className="empty-state">
-                <p>No current tasks. Add one above!</p>
+                <p>No current tasks. Add one above! 🚀</p>
               </div>
             )}
           </section>
 
+          {/* Log Study Time */}
           <section className="section">
             <div className="section-header">
               <h3 className="section-title">Log Study Time</h3>
@@ -480,6 +533,8 @@ export default function Dashboard() {
               </button>
             </form>
           </section>
+
+          {/* Study Analytics */}
           <section className="section" ref={analyticsRef}>
             <div className="section-header">
               <h3 className="section-title">Study Analytics</h3>
@@ -487,6 +542,7 @@ export default function Dashboard() {
             <StudyTimeChart userId={auth.currentUser?.uid} />
           </section>
 
+          {/* AI Assistant */}
           <section className="section" ref={aiRef}>
             <div className="section-header">
               <h3 className="section-title">AI Doubt Clarifier</h3>
@@ -494,6 +550,7 @@ export default function Dashboard() {
             <AIStudyAssistant />
           </section>
 
+          {/* My Marks */}
           <section className="section" ref={marksRef}>
             <div className="section-header">
               <h3 className="section-title">My Marks</h3>
@@ -555,7 +612,7 @@ export default function Dashboard() {
                               className="btn btn-delete"
                               aria-label="Delete mark"
                             >
-                              <FontAwesomeIcon icon={faTrash} /> Delete
+                              <FontAwesomeIcon icon={faTrash} />
                             </button>
                           </td>
                         </tr>
@@ -565,11 +622,12 @@ export default function Dashboard() {
               </div>
             ) : (
               <div className="empty-state">
-                <p>No marks recorded yet.</p>
+                <p>No marks recorded yet. 📚</p>
               </div>
             )}
           </section>
 
+          {/* Pomodoro Timer */}
           <section className="section" ref={progressRef}>
             <div className="section-header">
               <h3 className="section-title">Pomodoro Timer</h3>

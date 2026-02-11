@@ -1,17 +1,6 @@
 import axios from "axios";
-import {
-  getFirestore,
-  doc,
-  setDoc,
-  serverTimestamp,
-  getDoc,
-} from "firebase/firestore";
-import { initializeApp } from "firebase/app";
-import { firebaseConfig } from "../firebase";
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+import { db } from "../firebase";
+import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
 
 export async function getDoubtClarification(doubt) {
   try {
@@ -32,7 +21,7 @@ export async function getDoubtClarification(doubt) {
             content: `Clarify this doubt: ${doubt}`,
           },
         ],
-        model: "llama3-70b-8192",
+        model: "llama-3.3-70b-versatile",
         temperature: 0.7,
         max_tokens: 100,
       },

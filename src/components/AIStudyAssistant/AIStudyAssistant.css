@@ -1,70 +1,235 @@
+/* ═══════════════════════════════════════════════════════════
+   AI Study Assistant — Chat-Like Dark Glass UI
+   ═══════════════════════════════════════════════════════════ */
+
 .ai-assistant {
-  padding: 1rem;
-  background-color: #f9fafb;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  margin-top: 1rem;
+  border-radius: var(--border-radius);
+  overflow: hidden;
 }
 
+/* ── Header ── */
+.ai-header {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ai-header h3 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.ai-header h3::before {
+  content: "";
+  display: none;
+}
+
+/* ── Textarea ── */
 .doubt-input {
   width: 100%;
-  padding: 0.75rem;
-  border: 1px solid #ccc;
-  border-radius: 6px;
+  padding: 14px 16px;
+  background: var(--bg-input);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--border-radius-sm);
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  font-family: inherit;
   resize: vertical;
-  margin-bottom: 0.75rem;
-  font-size: 1rem;
+  min-height: 80px;
+  transition: all var(--transition-fast);
+  outline: none;
+  line-height: 1.5;
 }
 
+.doubt-input::placeholder {
+  color: var(--text-muted);
+}
+
+.doubt-input:focus {
+  border-color: var(--accent-primary);
+  background: var(--bg-input-focus);
+  box-shadow: 0 0 0 3px var(--accent-subtle);
+}
+
+.doubt-input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ── Button ── */
 .ai-button {
-  background-color: #3b82f6;
+  width: 100%;
+  padding: 12px 20px;
+  background: var(--gradient-primary);
   color: white;
-  padding: 0.6rem 1rem;
   border: none;
-  border-radius: 6px;
+  border-radius: var(--border-radius-sm);
+  font-size: 0.9rem;
+  font-weight: 600;
   cursor: pointer;
-  font-weight: bold;
+  transition: all var(--transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: inherit;
+  letter-spacing: 0.02em;
+}
+
+.ai-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(var(--accent-primary-rgb), 0.35);
 }
 
 .ai-button.loading {
-  opacity: 0.7;
+  opacity: 0.8;
   pointer-events: none;
 }
 
+/* ── Spinner ── */
 .spinner {
   width: 16px;
   height: 16px;
-  border: 2px solid #ffffff;
-  border-top: 2px solid #3b82f6;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
   border-radius: 50%;
   display: inline-block;
-  margin-right: 8px;
-  animation: spin 1s linear infinite;
+  animation: spin 0.8s linear infinite;
 }
 
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
+/* ── Loading Dots ── */
+.loading-dots {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
 
-  100% {
-    transform: rotate(360deg);
+.loading-dots span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent-primary);
+  animation: dot-bounce 1.4s ease-in-out infinite both;
+}
+
+.loading-dots span:nth-child(1) { animation-delay: -0.32s; }
+.loading-dots span:nth-child(2) { animation-delay: -0.16s; }
+.loading-dots span:nth-child(3) { animation-delay: 0s; }
+
+@keyframes dot-bounce {
+  0%, 80%, 100% {
+    transform: scale(0.6);
+    opacity: 0.4;
+  }
+  40% {
+    transform: scale(1);
+    opacity: 1;
   }
 }
 
+/* ── Error ── */
 .ai-error {
-  color: red;
-  margin-top: 10px;
+  margin-top: 12px;
+  background: var(--danger-bg);
+  border: 1px solid rgba(248, 113, 113, 0.2);
+  border-radius: var(--border-radius-sm);
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--danger);
+  font-size: 0.85rem;
+  animation: fadeInUp 0.3s var(--ease-out);
 }
 
+.ai-error button {
+  background: rgba(248, 113, 113, 0.15);
+  border: 1px solid rgba(248, 113, 113, 0.3);
+  color: var(--danger);
+  padding: 6px 14px;
+  border-radius: var(--border-radius-sm);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+  font-family: inherit;
+}
+
+.ai-error button:hover {
+  background: rgba(248, 113, 113, 0.25);
+}
+
+/* ── Clarification Response ── */
 .ai-clarification {
-  margin-top: 1rem;
-  background-color: #f1f5f9;
-  padding: 0.75rem;
-  border-radius: 6px;
+  margin-top: 16px;
+  background: var(--bg-glass);
+  border: 1px solid var(--border-subtle);
+  border-left: 3px solid var(--accent-primary);
+  border-radius: var(--border-radius-sm);
+  padding: 20px;
+  animation: fadeInUp 0.4s var(--ease-out);
 }
 
+.ai-clarification h4 {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--accent-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ai-clarification h4::before {
+  content: "";
+  display: none;
+}
+
+/* ── Markdown Content ── */
 .markdown-content {
-  font-size: 1rem;
-  line-height: 1.5;
+  font-size: 0.9rem;
+  line-height: 1.7;
+  color: var(--text-secondary);
+}
+
+.ai-clarification ul.markdown-content,
+.ai-clarification ol.markdown-content {
+  padding-left: 1.2rem;
+}
+
+.ai-clarification li.markdown-content {
+  margin-bottom: 6px;
+}
+
+.ai-clarification code {
+  background: var(--bg-input);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.85em;
+  color: var(--accent-secondary);
+}
+
+.ai-clarification pre {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--border-radius-sm);
+  padding: 16px;
+  overflow-x: auto;
+  margin: 12px 0;
+}
+
+.ai-clarification pre code {
+  background: none;
+  padding: 0;
+  color: var(--text-primary);
 }

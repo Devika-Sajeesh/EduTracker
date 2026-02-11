@@ -2,11 +2,14 @@
 import React, { useState } from "react";
 import "./Auth.css";
 import { auth, db } from "../../firebase";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faGraduationCap, faExclamationCircle } from "@fortawesome/free-solid-svg-icons";
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
 } from "firebase/auth";
 import { doc, setDoc, serverTimestamp } from "firebase/firestore";
+
 export default function Auth() {
   const [rightPanel, setRightPanel] = useState(false);
   const [error, setError] = useState(null);
@@ -18,7 +21,6 @@ export default function Auth() {
     const password = e.target.password.value;
     const confirmPassword = e.target.confirmPassword.value;
 
-    // Validate password match
     if (password !== confirmPassword) {
       setError("Passwords don't match");
       return;
@@ -31,12 +33,11 @@ export default function Auth() {
         password
       );
 
-      // Create user document with student role by default
       const userRef = doc(db, "users", userCred.user.uid);
       await setDoc(userRef, {
         fullName,
         email,
-        role: "student", // Force student role
+        role: "student",
         createdAt: serverTimestamp(),
         lastLogin: serverTimestamp(),
       });
@@ -55,14 +56,11 @@ export default function Auth() {
     try {
       await signInWithEmailAndPassword(auth, email, password);
 
-      // Update last login time
       if (auth.currentUser) {
         const userRef = doc(db, "users", auth.currentUser.uid);
         await setDoc(
           userRef,
-          {
-            lastLogin: serverTimestamp(),
-          },
+          { lastLogin: serverTimestamp() },
           { merge: true }
         );
       }
@@ -74,88 +72,110 @@ export default function Auth() {
   };
 
   return (
-    <div className={`container ${rightPanel ? "right-panel-active" : ""}`}>
-      {/* Welcome Message 
-      <div className="welcome-message">
-        <h1>Welcome to EduTrack!</h1>
-        <p>
-          Track your learning progress, organize your studies, and achieve your
-          academic goals.
-        </p>
-      </div>*/}
+    <div className="auth-page">
+      {/* Animated background blob */}
+      <div className="auth-bg-blob" />
+
+      {/* Brand badge */}
+      <div className="auth-brand">
+        <FontAwesomeIcon icon={faGraduationCap} className="auth-brand-icon" />
+        EduTrack
+      </div>
+
       {/* Error Message */}
-      {error && (
         <div className="error-message">
-          {error}
-          <button onClick={() => setError(null)}>×</button>
+          <FontAwesomeIcon icon={faExclamationCircle} /> {error}
+          <button className="error-dismiss" onClick={() => setError(null)}>×</button>
         </div>
-      )}
 
-      {/* Sign Up Form */}
-      <div className="form-container sign-up-container">
-        <form onSubmit={handleSignUp}>
-          <h1>Create Student Account</h1>
-          <span>Start tracking your learning progress</span>
-          <input name="fullName" type="text" placeholder="Full Name" required />
-          <input name="email" type="email" placeholder="Email" required />
-          <input
-            name="password"
-            type="password"
-            placeholder="Password (min 6 characters)"
-            minLength="6"
-            required
-          />
-          <input
-            name="confirmPassword"
-            type="password"
-            placeholder="Confirm Password"
-            required
-          />
-          <button type="submit">Sign Up</button>
-        </form>
-      </div>
+      <div className={`container ${rightPanel ? "right-panel-active" : ""}`}>
+        {/* Mobile toggle buttons */}
+        <div className="mobile-toggle">
+          <button
+            className={!rightPanel ? "active" : ""}
+            onClick={() => { setError(null); setRightPanel(false); }}
+          >
+            Sign In
+          </button>
+          <button
+            className={rightPanel ? "active" : ""}
+            onClick={() => { setError(null); setRightPanel(true); }}
+          >
+            Sign Up
+          </button>
+        </div>
 
-      {/* Sign In Form */}
-      <div className="form-container sign-in-container">
-        <form onSubmit={handleSignIn}>
-          <h1>Sign In</h1>
-          <span>Continue your learning journey</span>
-          <input name="email" type="email" placeholder="Email" required />
-          <input
-            name="password"
-            type="password"
-            placeholder="Password"
-            required
-          />
-          <a href="#">Forgot your password?</a>
-          <button type="submit">Sign In</button>
-        </form>
-      </div>
+        {/* Sign Up Form */}
+        <div className="form-container sign-up-container">
+          <form onSubmit={handleSignUp}>
+            <h1>Create Account</h1>
+            <span>Start your learning journey today</span>
+            <input name="fullName" type="text" placeholder="Full Name" required />
+            <input name="email" type="email" placeholder="Email Address" required />
+            <input
+              name="password"
+              type="password"
+              placeholder="Password (min 6 characters)"
+              minLength="6"
+              required
+            />
+            <input
+              name="confirmPassword"
+              type="password"
+              placeholder="Confirm Password"
+              required
+            />
+            <button type="submit">Create Account</button>
+          </form>
+        </div>
 
-      {/* Overlay Panels */}
-      <div className="overlay-container">
-        <div className="overlay">
-          <div className="overlay-panel overlay-left">
-            <h1>Welcome Back!</h1>
-            <p>
-              Sign in to track your tasks, study time, and academic progress
-            </p>
-            <button className="ghost" onClick={() => setRightPanel(false)}>
-              Sign In
-            </button>
-          </div>
-          <div className="overlay-panel overlay-right">
-            <h1>New Student?</h1>
-            <p>
-              Create your account to start organizing your studies and tracking
-              your grades
-            </p>
-            <button
-              className="ghost"
-              onClick={() => setError(null) || setRightPanel(true)}
-            >
-              Sign Up
-            </button>
+        {/* Sign In Form */}
+        <div className="form-container sign-in-container">
+          <form onSubmit={handleSignIn}>
+            <h1>Welcome Back</h1>
+            <span>Continue where you left off</span>
+            <input name="email" type="email" placeholder="Email Address" required />
+            <input
+              name="password"
+              type="password"
+              placeholder="Password"
+              required
+            />
+            <a href="#">Forgot your password?</a>
+            <button type="submit">Sign In</button>
+          </form>
+        </div>
+
+        {/* Overlay Panels */}
+        <div className="overlay-container">
+          <div className="overlay">
+            <div className="overlay-panel overlay-left">
+              <h1>Welcome Back!</h1>
+              <p>Already have an account? Sign in to access your study dashboard.</p>
+              <ul className="feature-list">
+                <li>Track your study progress</li>
+                <li>Manage tasks & deadlines</li>
+                <li>AI-powered doubt solving</li>
+              </ul>
+              <button className="ghost" onClick={() => setRightPanel(false)}>
+                Sign In
+              </button>
+            </div>
+            <div className="overlay-panel overlay-right">
+              <h1>New Here?</h1>
+              <p>Join thousands of students supercharging their studies.</p>
+              <ul className="feature-list">
+                <li>Pomodoro study timer</li>
+                <li>Grade tracking & analytics</li>
+                <li>Smart AI study assistant</li>
+              </ul>
+              <button
+                className="ghost"
+                onClick={() => { setError(null); setRightPanel(true); }}
+              >
+                Sign Up
+              </button>
+            </div>
           </div>
         </div>
       </div>
